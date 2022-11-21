@@ -25,8 +25,9 @@
  /******************************************************************************
   * Project Headers
   *****************************************************************************/
-#include "NtpClient.h"
+#include "NTP_client.h"
 #include <iostream>    // Needed to perform IO operations
+
 
   /******************************************************************************
   * System Headers
@@ -231,6 +232,23 @@ NtpClient::ReceivedMessage(char* buffer)
 	_sntpMsg._originateTimestamp = GetNtpTimestamp64(NTP_MSG_OFFSET_ORIGINATE_TIMESTAMP, buffer);
 	_sntpMsg._receiveTimestamp = GetNtpTimestamp64(NTP_MSG_OFFSET_RECEIVE_TIMESTAMP, buffer);
 	_sntpMsg._transmitTimestamp = GetNtpTimestamp64(NTP_MSG_OFFSET_TRANSMIT_TIMESTAMP, buffer);
+
+	printf("%llu\n",_sntpMsg._referenceTimestamp);
+	printf("%llu\n",_sntpMsg._originateTimestamp);
+	printf("%llu\n",_sntpMsg._receiveTimestamp);
+	printf("%llu\n",_sntpMsg._transmitTimestamp);
+
+  str_DT tm = ConvertUnixTimestamp(_sntpMsg._referenceTimestamp);
+	printf("%d %d %d\n", tm.year, tm.month, tm.day);
+
+  str_DT ot = ConvertUnixTimestamp(_sntpMsg._originateTimestamp);
+	printf("%d %d %d\n", ot.year, ot.month, ot.day);
+
+  str_DT rt = ConvertUnixTimestamp(_sntpMsg._receiveTimestamp);
+	printf("%d %d %d\n", rt.year, rt.month, rt.day);
+
+  str_DT tt = ConvertUnixTimestamp(_sntpMsg._transmitTimestamp);
+	printf("%d %d %d\n", tt.year, tt.month, tt.day);
 
 	uint64_t _tempOriginate = m_originateTimestamp;
 	if (_sntpMsg._originateTimestamp > 0)
@@ -470,4 +488,17 @@ NtpClient::GetStratumString(unsigned char _stratum)
 void
 NtpClient::SNTPMessage::clear() {
 	memset(this, 0, sizeof(*this));
+}
+
+#pragma warning(disable : 4996)
+
+// Example program
+#include <iostream>
+#include "NTP_client.h"
+
+
+int main()
+{
+	NtpClient _ntp;
+	_ntp.Connect();
 }

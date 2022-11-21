@@ -1,4 +1,5 @@
 /**
+* 
  *  This class is developed to get the local time or UTC time with precision.
  *  In particular, the offset is returned based on the Network Time Protocol (NTP),
  *  where ntp servers are used to sync the clock and include the timestamp. If accuracy
@@ -62,6 +63,9 @@
 #include <ws2def.h>
 #include <string>
 #include <stdlib.h>
+
+#include <chrono>
+#include <time.h>
 
 class NtpClient
 {
@@ -251,9 +255,78 @@ private:
 	 */
 	std::string GetStratumString(unsigned char _stratum);
 
-
 	int m_clockOffset;			   // offset of the local clock	
 	uint64_t m_originateTimestamp; // the time that the req is transmitted (in case that the NTP server does not copy this field from the req to the response)
 };
+
+
+#define LEAP_YEAR(Y) ( ((1970+Y)>0) && !((1970+Y)%4) && ( ((1970+Y)%100) || !((1970+Y)%400) ) )
+static const uint8_t _monthDays[] = { 31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+typedef struct _str_DT {
+	char hour;
+	char minute;
+	char second;
+	int year;
+	char month;
+	char day;
+	char dayofWeek;
+	bool valid;
+} str_DT;
+
+str_DT ConvertUnixTimestamp(unsigned long _tempTimeStamp) {
+	str_DT _tempDateTime;
+	uint8_t _year, _month, _monthLength;
+	uint32_t _time;
+	unsigned long _days;
+
+	_time = (uint32_t)_tempTimeStamp;
+	_tempDateTime.second = _time % 60;
+	_time /= 60; // now it is minutes
+	_tempDateTime.minute = _time % 60;
+	_time /= 60; // now it is hours
+	_tempDateTime.hour = _time % 24;
+	_time /= 24; // now it is _days
+	_tempDateTime.dayofWeek = ((_time + 4) % 7) + 1;  // Sunday is day 1
+
+	_year = 0;
+	_days = 0;
+	while ((unsigned)(_days += (LEAP_YEAR(_year) ? 366 : 365)) <= _time) {
+		_year++;
+	}
+	_tempDateTime.year = _year; // year is offset from 1970
+
+	_days -= LEAP_YEAR(_year) ? 366 : 365;
+	_time -= _days; // now it is days in this year, starting at 0
+
+	_days = 0;
+	_month = 0;
+	_monthLength = 0;
+	for (_month = 0; _month < 12; _month++) {
+		if (_month == 1) { // february
+			if (LEAP_YEAR(_year)) {
+				_monthLength = 29;
+			}
+			else {
+				_monthLength = 28;
+			}
+		}
+		else {
+			_monthLength = _monthDays[_month];
+		}
+
+		if (_time >= _monthLength) {
+			_time -= _monthLength;
+		}
+		else {
+			break;
+		}
+	}
+	_tempDateTime.month = _month + 1;  // jan is month 1
+	_tempDateTime.day = _time + 1;     // day of month
+	_tempDateTime.year += 1970;
+
+	return _tempDateTime;
+}
 
 #endif  /* NTPCLIENT_H */

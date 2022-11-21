@@ -1,6 +1,6 @@
 # CMAKE version of Ubuntu 20.04 is 3.16
 cmake_minimum_required(VERSION 3.16)
-project(exp_NTP)
+project(exp_curl)
 
 set(SRC)
 set(INCL)
@@ -8,17 +8,21 @@ set(LINKLIBS)
 set(COMPILE_OPTION)
 
 list(APPEND SRC
-    NTP_client.h
-    NTP_client.cpp
+    exp_curl.h
     test.cpp
   )
 list(APPEND INCL
   ${CMAKE_CURRENT_LIST_DIR}/.
+  ${CMAKE_CURRENT_LIST_DIR}/libcurl
+  ${CMAKE_CURRENT_LIST_DIR}/libcurl/curl
+  ${CMAKE_CURRENT_LIST_DIR}/libcurl/openssl
   )
 list(APPEND LINKLIBS
+${CMAKE_CURRENT_LIST_DIR}/build/libcurl.lib
   )
 if(MSVC)
   list(APPEND COMPILE_OPTION
+  -DCURL_STATICLIB
     )
 else()
   list(APPEND COMPILE_OPTION
