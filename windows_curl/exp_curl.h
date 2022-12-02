@@ -39,13 +39,11 @@ size_t SyncTime_CURL_WriteHeader(void* ptr, size_t size, size_t nmemb,
   int AutoSyncTime = 1;
 
   char  TmpStr1[26], TmpStr2[26];
-  printf("Called WH\n");
-
+ 
   (void)stream;
 
   if (ShowAllHeader == 1)
     fprintf(stderr, "%s", (char*)(ptr));
-  printf("strcnmp : %d\n", strncmp((char*)(ptr), "Date:", 5));
   if (strncmp((char*)(ptr), "Date:", 5) == 0) {
     if (ShowAllHeader == 0)
       fprintf(stderr, "HTTP Server. %s", (char*)(ptr));
@@ -64,8 +62,6 @@ size_t SyncTime_CURL_WriteHeader(void* ptr, size_t size, size_t nmemb,
           TmpStr1, &SYSTime.wDay, TmpStr2, &SYSTime.wYear,
           &SYSTime.wHour, &SYSTime.wMinute,
           &SYSTime.wSecond);
-
-        printf("HH : %d\n",SYSTime.wYear);
 
         if (RetVal == 7) {
           int i;
@@ -253,8 +249,12 @@ void exp_curl::SyncTime_CURL_Init(CURL* curl, char* proxy_port,
   curl_easy_setopt(curl, CURLOPT_USERAGENT, SYNCTIME_UA);
 #endif
   curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, SyncTime_CURL_WriteOutput);
-  printf("set WH\n");
   curl_easy_setopt(curl, CURLOPT_HEADERFUNCTION, SyncTime_CURL_WriteHeader);
+
+  //https://stackoverflow.com/questions/62025462/curl-easy-perform-failed-ssl-peer-certificate-or-ssh-remote-key-was-not-ok
+  curl_easy_setopt(curl, CURLOPT_SSL_VERIFYSTATUS, 1);
+  curl_easy_setopt(curl, CURLOPT_CAINFO, "cacert.pem");
+  curl_easy_setopt(curl, CURLOPT_CAPATH, "cacert.pem");
 }
 
 
