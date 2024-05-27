@@ -19,10 +19,7 @@
 
 #pragma comment (lib, "Setupapi.lib")
 
-
 // https://oroboro.com/usb-serial-number/
-
-
 
 //returns the serial number of the first physical drive in a std::string or an empty std::string in case of failure
 //based on http://codexpert.ro/blog/2013/10/26/get-physical-drive-serial-number-part-1/
@@ -206,27 +203,10 @@ int reg() {
     RegCloseKey(hKey);
 }
 
-void wmic() {
-  char buffer[2048];
-
-  FILE* pipe = _popen("wmic diskdrive get Model, SerialNumber", "r");
-
-  if (!pipe) {
-   std::cout << "popen failed!";
-  }
-  int idx = 0;
-  while (!feof(pipe)) {
-    std::cout << "line " << idx++ << " : ";
-    if (fgets(buffer, 128, pipe) != NULL)
-      std::cout << buffer;
-  }
-  _pclose(pipe);
-  return;
-    
-}
-
+#include "exp_serial.h"
 
 int main() {
-  wmic();
+  bool flag =  validation_with_serial("01012e4c21a8394bedf4");
+  printf("Flag : %d\n", flag);
     return 0;
 }
